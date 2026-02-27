@@ -1,0 +1,156 @@
+---
+title: "Corporate Finance - Pfizer Group"
+format: 
+  html:  
+    theme: sandstone
+    toc: true
+editor: visual
+---
+
+## Group Members:
+
+-   Christopher Taratko
+
+-   Angus Allan
+
+-   Caidence Hulton
+
+-   Nate Mason
+
+## Pfizer Overview
+
+Pfizer \[PFE\] is a Pharmaceutical & Biotechnology Corporation. Headquartered in New York, it's one of the largest research based drug manufacturers. For the reason of choosing Pfizer, it was due to it's media activity within the past 6 years, how it was one of the leading names through COVID-19, and it's heavy growth of R&D Projects that base themselves in Influenza Vaccines, Oncology, and Obesity/Metabolic Health. As of recent, their key business situated around COVID-19 Vaccinations and similar products, but with the decreasing demand for such products, they've begun pushing increased efforts into their Metabolic & Oncological research.
+
+For Pfizer's Senior Leadership, specifically their CEO, Dr. Albert Bourla has been regarded as a great leader for the Pfizer company by many outlets, although his performance also seems to be politically based to an extent. Gaining the title of `CNN Business CEO of the year` in 2021, he has also led the stock price of Pfizer from 2021 to present date \[\~2026\] in a decreasing manner from \~\$40 to \~\$30 (-25%). This can primarily be related to the significant market changes of COVID-19 no longer being a large market segment, and Pfizer being too heavily invested into it.
+
+As for Pfizer's Turnover Rate of Employees and Management. The `Employee Turnover Rate` compares equivocally to other comparable Pharmaceutical Giants, while it's `Management Turnover Rate` is considered to be higher than the average Pharmaceutical Firm.
+
+```{r}
+#| message: false
+#| include: false
+#| warning: false
+# Working Directory
+library(tidyverse)
+library(ggthemes)
+library(hrbrthemes)
+library(rmarkdown)
+
+setwd("C:/Users/laxtw/OneDrive/Desktop/MyProgram/Finance-312-Group-Project")
+```
+
+### Data Loading
+
+```{r, message=FALSE}
+#| message: false
+#| warning: false
+Pfizer <- read_csv("PFE_history.csv",
+                   show_col_types = FALSE)
+Pfizer %>% 
+  colnames()
+```
+
+### Data Summary
+
+This data includes Pfizer data from 2019-01-01 all the way to 2026-02-26. With that said, the data will be cut down into two chunks, a filtered 2024 dataframe and a five year dataframe from 2019-01-01 to 2024-12-31.
+
+<table>
+
+<tr>
+
+<th></th><th>Date</th><th>Open</th><th>High</th><th>Low</th><th>close</th><th>adj Close\*\*</th><th>Volume</th>
+
+</tr>
+
+<tr>
+
+<th>Explanation: </th><td>year-mon-dy</td><td>Open Value</td><td>Daily High Value</td><td>Daily Low Value</td><td>Closing Value</td><td>EOD Closing Value</td><td>Outstanding Tradable Volume</td>
+
+</tr>
+
+<tr>
+
+<th>Format:     </th><td>[chr]</td><td>[num]</td><td>[num]</td><td>[num]</td><td>[num]</td><td>[num]</td><td>[num]</td>
+
+</tr>
+
+</table>
+
+```{r, message=FALSE}
+#| message: false
+#| warning: false
+#| echo: false
+rmarkdown::paged_table(Pfizer)
+
+```
+
+## Quantitative Analysis – Data Manipulation
+
+### Daily Historical Prices for the Stock \[2024\]:
+
+```{r}
+#| warning: false
+Pfizer$Date <- as.Date(Pfizer$Date, format = "%d-%b-%y")
+
+
+DailyStockPrice <- Pfizer %>%
+  filter(year(Date) == 2024) %>% 
+  mutate(DailyReturn = round((`Close*` / `Close*`[-1]) - 1, digits = 5))
+
+values <- DailyStockPrice %>% 
+  select(DailyReturn) %>% 
+  summarise(
+    m_DR = round(mean(DailyReturn), digits = 6),
+    sd_DR = round(sd(DailyReturn), digits = 6)
+  )
+values <- as.data.frame(values)
+values
+```
+
+```{r}
+#| warning: false
+ggplot(DailyStockPrice, aes(
+  x = Date,
+  y = `Close*`
+)) +
+  geom_line(aes(y = `Close*`),size = 1, show.legend = F) +
+  geom_line(aes(y = High, color = "lightgreen"),size = .25, show.legend = F) +
+  geom_line(aes(y = Low, color = "red4"),size = .25, show.legend = F) +
+  theme_solarized() + 
+  labs(
+    title = "Pfizer Closing Values [2024]"
+  )
+```
+
+In the year 2024, the Pfizer stock had fairly volatile stock price, with the end of the year making it's way down to \$26.53
+
+### 5+ Year Visualization
+
+```{r}
+#| warning: false
+ggplot(Pfizer, aes(
+  x = Date,
+  y = `Close*`
+)) +
+  geom_line(size = .75) +
+  theme_solarized() + 
+  labs(
+    title = "Pfizer Closing Values [2019-2026]"
+  ) +
+  scale_color_manual(values = "#fff")
+```
+
+```{r}
+#| warning: false
+# 
+ggplot(Pfizer, aes(
+  x = Date
+#  y = c(`Close*`, Pfizer$High, Pfizer$Low)
+)) +
+  geom_line(aes(y = `Close*`, color = "white"),size = 1, show.legend = F) +
+  geom_line(aes(y = High, color = "seagreen4"),size = .5, show.legend = F) +
+  geom_line(aes(y = Low, color = "seagreen4"),size = .5, show.legend = F) +
+  labs(
+    title = "Pfizer Closing Values [2019-2026]"
+  ) +
+  theme_solarized()
+```
